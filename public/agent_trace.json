@@ -1,0 +1,10 @@
+[
+  { "id": "t1", "type": "plan", "content": "Initializing research node...", "confidence": 1.0, "timestamp": 0 },
+  { "id": "t2", "type": "search", "content": "Queries: 'ARIA AI research strategies', 'autonomous research agents langgraph'", "confidence": 0.85, "timestamp": 1200 },
+  { "id": "t3", "type": "evaluate", "content": "Found 12 sources. Filtering for relevance and academic authority...", "confidence": 0.62, "timestamp": 2500 },
+  { "id": "t4", "type": "retry", "content": "Heuristic check failed: Source quality score (0.42) < Threshold (0.80). Reformulating strategy...", "confidence": 0.42, "timestamp": 3800 },
+  { "id": "t5", "type": "plan", "content": "New strategy: Targeted search on scholar.google.com and arxiv.org for 'self-correcting research agents'.", "confidence": 0.95, "timestamp": 5000 },
+  { "id": "t6", "type": "search", "content": "Fetching documents from arXiv and Semantic Scholar API...", "confidence": 0.98, "timestamp": 6200 },
+  { "id": "t7", "type": "evaluate", "content": "Cross-referencing 5 key papers. High confidence metadata detected.", "confidence": 0.92, "timestamp": 8000 },
+  { "id": "t8", "type": "synthesize", "content": "Generating response with Citations [1][2][3][5]. Analysis complete.", "confidence": 0.96, "timestamp": 10000 }
+]
