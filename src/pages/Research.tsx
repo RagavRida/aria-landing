@@ -432,6 +432,25 @@ export default function Research() {
   const [selectedProvider, setSelectedProvider] = useState('groq');
   const [selectedModel, setSelectedModel] = useState('llama-3.3-70b-versatile');
 
+  // ── Auth + history state ──
+  const [token] = useState(() => (typeof window === 'undefined' ? null : localStorage.getItem('aria_token')));
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+  const [history, setHistory] = useState([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const refreshHistory = async () => {
+    if (!token) return;
+    try {
+      const r = await fetch(`${backendUrl}/api/history?limit=50`, { headers: authHeaders });
+      if (r.ok) setHistory(await r.json());
+    } catch { /* silent */ }
+  };
+
+  const signOut = () => {
+    localStorage.removeItem('aria_token');
+    window.location.href = '/';
+  };
+
   const logEndRef = useRef(null);
   const timerRef = useRef(null);
   const retryCardRef = useRef(null);
@@ -469,6 +488,9 @@ export default function Research() {
       })
       .catch(() => { });
   }, [backendUrl]);
+
+  // Fetch user's research history on mount (requires JWT)
+  useEffect(() => { refreshHistory(); }, []);
 
   const handleModelSwitch = async (provider: string, model: string) => {
     setSelectedProvider(provider);
@@ -581,7 +603,7 @@ export default function Research() {
     try {
       const response = await fetch(`${backendUrl}/api/research/stream`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ query }),
       });
 
@@ -786,6 +808,7 @@ export default function Research() {
               const completeData = event.data;
               setProgress(100);
               setIsRunning(false);
+              refreshHistory();
 
               if (completeData.final_answer && !finalAnswer) {
                 const finalData = {
@@ -920,8 +943,48 @@ export default function Research() {
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
               )}
             </div>
+            {token && (
+              <button
+                onClick={() => setHistoryOpen(o => !o)}
+                className="flex items-center gap-1 px-2 py-0.5 border border-cyan-500/30 bg-slate-900 text-cyan-400 rounded-full font-bold hover:bg-cyan-500/10 transition"
+                title="My research history"
+              >
+                <FileText size={10} /> HISTORY <span className="text-cyan-500/70">{history.length}</span>
+              </button>
+            )}
+            {token ? (
+              <button onClick={signOut} className="text-slate-500 hover:text-rose-400 transition">SIGN OUT</button>
+            ) : (
+              <a href="/signin" className="text-slate-500 hover:text-cyan-400 transition">SIGN IN</a>
+            )}
           </div>
         </div>
+
+        {/* History drawer */}
+        {historyOpen && token && (
+          <div className="absolute right-0 top-14 z-40 w-80 max-h-[60vh] overflow-y-auto custom-scrollbar border border-cyan-500/30 bg-slate-950/95 backdrop-blur-sm rounded-bl-lg shadow-[0_0_30px_rgba(0,212,255,0.15)]">
+            <div className="sticky top-0 bg-slate-950/95 border-b border-cyan-500/20 px-3 py-2 flex items-center justify-between">
+              <span className="font-mono text-[10px] text-cyan-400 tracking-widest">YOUR RESEARCH · {history.length}</span>
+              <button onClick={() => setHistoryOpen(false)} className="text-slate-500 hover:text-cyan-400 text-xs">✕</button>
+            </div>
+            {history.length === 0 ? (
+              <div className="p-4 text-[11px] font-mono text-slate-500">No runs yet. Submit a query to start saving.</div>
+            ) : (
+              <ul className="divide-y divide-cyan-500/10">
+                {history.map(h => (
+                  <li key={h.id} className="group px-3 py-2 hover:bg-cyan-500/5 cursor-pointer" onClick={() => { setQuery(h.query); setHistoryOpen(false); }}>
+                    <div className="text-[12px] text-slate-200 line-clamp-2 group-hover:text-cyan-300 transition">{h.query}</div>
+                    <div className="mt-1 flex items-center gap-2 text-[9px] font-mono text-slate-500">
+                      <span>{new Date(h.created_at).toLocaleString()}</span>
+                      {h.confidence != null && <span className="text-emerald-500">{Math.round(h.confidence)}%</span>}
+                      {h.iterations != null && <span>{h.iterations} iter</span>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Breadcrumb row */}
         <div className="h-6 bg-slate-950 border-b border-cyan-500/10 flex items-center px-6 text-[10px] font-mono text-slate-500">
