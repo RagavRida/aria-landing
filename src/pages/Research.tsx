@@ -32,28 +32,27 @@ const TOOLS = [
 
 const TypewriterText = ({ text, speed = 30, onComplete = undefined }) => {
   const [displayedText, setDisplayedText] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
-  const index = useRef(0);
 
   useEffect(() => {
+    if (!text) { setDisplayedText(''); return; }
+    let cancelled = false;
+    let i = 0;
     setDisplayedText('');
-    index.current = 0;
-    setIsComplete(false);
-  }, [text]);
+    const tick = () => {
+      if (cancelled) return;
+      i += 1;
+      setDisplayedText(text.slice(0, i));
+      if (i >= text.length) {
+        if (onComplete) onComplete();
+        return;
+      }
+      timeoutId = setTimeout(tick, speed);
+    };
+    let timeoutId = setTimeout(tick, speed);
+    return () => { cancelled = true; clearTimeout(timeoutId); };
+  }, [text, speed]);
 
-  useEffect(() => {
-    if (index.current < text.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText((prev) => prev + text.charAt(index.current));
-        index.current += 1;
-      }, speed);
-      return () => clearTimeout(timeout);
-    } else if (!isComplete) {
-      setIsComplete(true);
-      if (onComplete) onComplete();
-    }
-  }, [displayedText, text, speed, onComplete, isComplete]);
-
+  const isComplete = !!text && displayedText.length >= text.length;
   return (
     <span className={!isComplete ? 'cursor-blink' : ''}>
       {displayedText}
