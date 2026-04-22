@@ -20,6 +20,20 @@ backend with real JWT.
 
 ---
 
+## 🤖 Built with Claude Code
+
+This landing was built in collaboration with [Claude Code](https://claude.com/claude-code),
+Anthropic's CLI coding agent, across sessions on **2026-04-20 → 2026-04-22**.
+AI-assisted components include the Vite + React 19 scaffolding, the
+scroll-driven hero sequence, the auth client in [`src/lib/auth.ts`](./src/lib/auth.ts),
+the Express wrapper in [`server.ts`](./server.ts), and the Vercel proxy config
+that keeps `/api/*` same-origin with the FastAPI backend on Railway.
+
+Commits are authored by the project owner; Claude Code was used as a
+pair-programmer throughout, not as a ghostwriter.
+
+---
+
 ## 🚀 Run locally
 
 ```bash
